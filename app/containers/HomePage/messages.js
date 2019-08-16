@@ -10,23 +10,22 @@ export const scope = 'boilerplate.containers.HomePage';
 export default defineMessages({
   startProjectHeader: {
     id: `${scope}.start_project.header`,
-    defaultMessage: 'Start your next react project in seconds',
+    defaultMessage: `Source liquidity from Radar Relay using its SDK`,
   },
   startProjectMessage: {
     id: `${scope}.start_project.message`,
-    defaultMessage:
-      'A highly scalable, offline-first foundation with the best DX and a focus on performance and best practices',
+    defaultMessage: `UX works similarly to Fulcrum`,
   },
-  trymeHeader: {
-    id: `${scope}.tryme.header`,
-    defaultMessage: 'Try me!',
+  tradeHeader: {
+    id: `${scope}.trade.header`,
+    defaultMessage: 'Trade',
   },
-  trymeMessage: {
-    id: `${scope}.tryme.message`,
-    defaultMessage: 'Show Github repositories by',
+  tradeMessage: {
+    id: `${scope}.trade.message`,
+    defaultMessage: 'Market: ',
   },
-  trymeAtPrefix: {
-    id: `${scope}.tryme.atPrefix`,
-    defaultMessage: '@',
+  tradeSeparator: {
+    id: `${scope}.trade.Separator`,
+    defaultMessage: '/',
   },
 });

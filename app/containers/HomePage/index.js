@@ -9,62 +9,67 @@ import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
+import Select from 'react-select';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 
 import { useInjectReducer } from 'utils/injectReducer';
 import { useInjectSaga } from 'utils/injectSaga';
 import {
-  makeSelectRepos,
+  makeSelectOrderBook,
   makeSelectLoading,
   makeSelectError,
 } from 'containers/App/selectors';
 import H2 from 'components/H2';
 import ReposList from 'components/ReposList';
-import AtPrefix from './AtPrefix';
+import Separator from './Separator';
 import CenteredSection from './CenteredSection';
 import Form from './Form';
 import Input from './Input';
 import Section from './Section';
 import messages from './messages';
-import { loadRepos } from '../App/actions';
-import { changeUsername } from './actions';
-import { makeSelectUsername } from './selectors';
+import { loadOrderBook } from '../App/actions';
+import { changeMarketBase, changeMarketQuote } from './actions';
+import { makeSelectMarketBase, makeSelectMarketQuote } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
 
 const key = 'home';
 
 export function HomePage({
-  username,
+  MarketBase,
+  MarketQuote,
   loading,
   error,
-  repos,
+  OrderBook,
   onSubmitForm,
-  onChangeUsername,
+  onSelectMarketBase,
+  onSelectMarketQuote,
 }) {
   useInjectReducer({ key, reducer });
   useInjectSaga({ key, saga });
 
   useEffect(() => {
-    // When initial state username is not null, submit the form to load repos
-    if (username && username.trim().length > 0) onSubmitForm();
+    // When initial state MarketBase is not null, submit the form to load OrderBook
+    console.log('MarketBase', typeof MarketBase, MarketBase)
+    console.log('MarketQuote', typeof MarketQuote, MarketQuote)
+    if (MarketBase && MarketBase.trim().length > 0
+      && MarketQuote && MarketQuote.trim().length > 0) onSubmitForm();
   }, []);
 
   const reposListProps = {
     loading,
     error,
-    repos,
+    OrderBook,
+    MarketBase,
+    MarketQuote
   };
 
   return (
     <article>
       <Helmet>
-        <title>Home Page</title>
-        <meta
-          name="description"
-          content="A React.js Boilerplate application homepage"
-        />
+        <title>Order Book</title>
+        <meta name="description" content="A Radar Relay Webapp" />
       </Helmet>
       <div>
         <CenteredSection>
@@ -77,22 +82,40 @@ export function HomePage({
         </CenteredSection>
         <Section>
           <H2>
-            <FormattedMessage {...messages.trymeHeader} />
+            Order Book
           </H2>
           <Form onSubmit={onSubmitForm}>
-            <label htmlFor="username">
-              <FormattedMessage {...messages.trymeMessage} />
-              <AtPrefix>
-                <FormattedMessage {...messages.trymeAtPrefix} />
-              </AtPrefix>
-              <Input
-                id="username"
+            <label htmlFor="Market"></label>
+            <div id={"Market"}>
+              <Select
+                id="MarketBase"
                 type="text"
-                placeholder="mxstbr"
-                value={username}
-                onChange={onChangeUsername}
+                placeholder="ZRX"
+                label={MarketBase}
+                onChange={onSelectMarketBase}
+                options={[
+                  { label: '0x', value: 'ZRX' },
+                  { label: 'Chainlink', value: 'LINK' },
+                  { label: 'Augur', value: 'REP' },
+                  { label: 'Kyber Network', value: 'KNC' },
+                ]}
               />
-            </label>
+              <Separator>
+                <FormattedMessage {...messages.tradeSeparator} />
+              </Separator>
+              <Select
+                id="MarketQuote"
+                type="text"
+                placeholder="WETH"
+                label={MarketQuote}
+                onChange={onSelectMarketQuote}
+                options={[
+                  { label: 'Ether', value: 'WETH' },
+                  { label: 'Bitcoin', value: 'WBTC' },
+                ]}
+              />
+            </div>
+            <input type="submit" value="Submit" />
           </Form>
           <ReposList {...reposListProps} />
         </Section>
@@ -104,25 +127,36 @@ export function HomePage({
 HomePage.propTypes = {
   loading: PropTypes.bool,
   error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-  repos: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
+  OrderBook: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
   onSubmitForm: PropTypes.func,
-  username: PropTypes.string,
-  onChangeUsername: PropTypes.func,
+  MarketBase: PropTypes.string,
+  MarketQuote: PropTypes.string,
+  onSelectMarketBase: PropTypes.func,
+  onSelectMarketQuote: PropTypes.func,
 };
 
 const mapStateToProps = createStructuredSelector({
-  repos: makeSelectRepos(),
-  username: makeSelectUsername(),
+  OrderBook: makeSelectOrderBook(),
+  MarketBase: makeSelectMarketBase(),
+  MarketQuote: makeSelectMarketQuote(),
   loading: makeSelectLoading(),
   error: makeSelectError(),
 });
 
 export function mapDispatchToProps(dispatch) {
   return {
-    onChangeUsername: evt => dispatch(changeUsername(evt.target.value)),
+    onSelectMarketBase: evt => {
+      console.log('onSelectMarketBase:',evt)
+      return dispatch(changeMarketBase(evt.value))
+    },
+    onSelectMarketQuote: evt => {
+      console.log('onSelectMarketQuote:',evt)
+      return dispatch(changeMarketQuote(evt.value))
+    },
     onSubmitForm: evt => {
+      console.log('onSubmitForm:',evt)
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
-      dispatch(loadRepos());
+      dispatch(loadOrderBook());
     },
   };
 }

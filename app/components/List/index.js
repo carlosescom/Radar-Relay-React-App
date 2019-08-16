@@ -1,26 +1,47 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import Ul from './Ul';
+import _ from 'lodash';
+
+import Table from './Table';
 import Wrapper from './Wrapper';
 
 function List(props) {
   const ComponentToRender = props.component;
-  let content = <div />;
+  let headers = <tr />;
+  let items = <tr />;
 
   // If we have items, render them
-  if (props.items) {
-    content = props.items.map(item => (
-      <ComponentToRender key={`item-${item.id}`} item={item} />
+  if (props.items && props.headers) {
+    headers = <tr>
+      {_.range(props.headers.length).map(index => (
+        <th key={`${index}`} style={{
+          padding: '10px',
+        }}>
+          {props.headers[index]}
+        </th>
+      ))}
+    </tr>
+    items = props.items.map(item => (
+      <ComponentToRender
+        key={`item-${item.id}`}
+        item={item}
+        {...props.theirProps}
+      />
     ));
   } else {
     // Otherwise render a single component
-    content = <ComponentToRender />;
+    items = <ComponentToRender />;
   }
 
   return (
     <Wrapper>
-      <Ul>{content}</Ul>
+      <Table>
+        <tbody>
+          {headers}
+          {items}
+        </tbody>
+      </Table>
     </Wrapper>
   );
 }

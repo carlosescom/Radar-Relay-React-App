@@ -15,18 +15,32 @@
  *    }
  */
 
-import { CHANGE_USERNAME } from './constants';
+import { CHANGE_MARKET_BASE, CHANGE_MARKET_QUOTE } from './constants';
 
 /**
  * Changes the input field of the form
  *
- * @param  {string} username The new text of the input field
+ * @param  {string} assetSymbol The new text of the input field
  *
- * @return {object} An action object with a type of CHANGE_USERNAME
+ * @return {object} An action object with a type of CHANGE_MARKET_BASE
  */
-export function changeUsername(username) {
+export function changeMarketBase(assetSymbol) {
   return {
-    type: CHANGE_USERNAME,
-    username,
+    type: CHANGE_MARKET_BASE,
+    assetSymbol,
+  };
+}
+
+/**
+ * Changes the input field of the form
+ *
+ * @param  {string} assetSymbol The new text of the input field
+ *
+ * @return {object} An action object with a type of CHANGE_MARKET_QUOTE
+ */
+export function changeMarketQuote(assetSymbol) {
+  return {
+    type: CHANGE_MARKET_QUOTE,
+    assetSymbol,
   };
 }

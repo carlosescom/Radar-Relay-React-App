@@ -8,35 +8,37 @@
  */
 
 import produce from 'immer';
-import { LOAD_REPOS_SUCCESS, LOAD_REPOS, LOAD_REPOS_ERROR } from './constants';
+import {
+  LOAD_ORDER_BOOK_SUCCESS,
+  LOAD_ORDER_BOOK,
+  LOAD_ORDER_BOOK_ERROR,
+} from './constants';
 
 // The initial state of the App
 export const initialState = {
   loading: false,
   error: false,
   currentUser: false,
-  userData: {
-    repositories: false,
-  },
+  OrderBook: false,
 };
 
 /* eslint-disable default-case, no-param-reassign */
 const appReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
-      case LOAD_REPOS:
+      case LOAD_ORDER_BOOK:
         draft.loading = true;
         draft.error = false;
-        draft.userData.repositories = false;
+        draft.OrderBook = false;
         break;
 
-      case LOAD_REPOS_SUCCESS:
-        draft.userData.repositories = action.repos;
+      case LOAD_ORDER_BOOK_SUCCESS:
+        console.log(LOAD_ORDER_BOOK_SUCCESS, action)
         draft.loading = false;
-        draft.currentUser = action.username;
+        draft.OrderBook = action.OrderBook;
         break;
 
-      case LOAD_REPOS_ERROR:
+      case LOAD_ORDER_BOOK_ERROR:
         draft.error = action.error;
         draft.loading = false;
         break;

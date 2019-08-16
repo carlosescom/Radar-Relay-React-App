@@ -4,22 +4,32 @@ import PropTypes from 'prop-types';
 import List from 'components/List';
 import ListItem from 'components/ListItem';
 import LoadingIndicator from 'components/LoadingIndicator';
-import RepoListItem from 'containers/RepoListItem';
+import OrderItem from 'containers/OrderItem';
 
-function ReposList({ loading, error, repos }) {
+function ReposList({ loading, error, OrderBook, MarketBase, MarketQuote }) {
   if (loading) {
-    return <List component={LoadingIndicator} />;
+    return <LoadingIndicator />;
   }
 
   if (error !== false) {
-    const ErrorComponent = () => (
+    const ErrorListItem = () => (
       <ListItem item="Something went wrong, please try again!" />
     );
-    return <List component={ErrorComponent} />;
+    return <List component={ErrorListItem} />;
   }
 
-  if (repos !== false) {
-    return <List items={repos} component={RepoListItem} />;
+  if (OrderBook !== false) {
+    let asks = OrderBook.asks.map(item => {
+      item.id = item.orderHash
+      return item
+    })
+    console.log(asks)
+    return <List
+      items={asks}
+      headers={['Bids', MarketBase, MarketQuote, '']}
+      component={OrderItem}
+      theirProps={{ MarketBase, MarketQuote }}
+    />;
   }
 
   return null;
@@ -28,7 +38,9 @@ function ReposList({ loading, error, repos }) {
 ReposList.propTypes = {
   loading: PropTypes.bool,
   error: PropTypes.any,
-  repos: PropTypes.any,
+  OrderBook: PropTypes.any,
+  MarketBase: PropTypes.string,
+  MarketQuote: PropTypes.string,
 };
 
 export default ReposList;
