@@ -10,7 +10,7 @@ import { SdkManager, EventName } from '@radarrelay/sdk';
 import { UserOrderType } from '@radarrelay/types';
 
 import _ from 'lodash';
-import BigNumber from 'bignumber.js';
+import BigNumber from '@0xproject/utils';
 
 import H1 from 'components/H1';
 import PositionList from 'components/PositionList';
