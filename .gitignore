@@ -8,3 +8,5 @@ stats.json
 .DS_Store
 npm-debug.log
 .idea
+docs/js/redux-saga.md
+.env
