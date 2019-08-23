@@ -10,7 +10,7 @@ import { SdkManager, EventName } from '@radarrelay/sdk';
 import { UserOrderType } from '@radarrelay/types';
 
 import _ from 'lodash';
-import BigNumber from '@0xproject/utils';
+import { BigNumber } from '@0xproject/utils';
 
 import H1 from 'components/H1';
 import PositionList from 'components/PositionList';
@@ -19,17 +19,7 @@ export default class TradingPage extends React.Component {
 
   constructor(props) {
     super()
-    this.SdkManager = SdkManager
     this.state = {
-      rr: this.SdkManager.Setup({
-        wallet: {
-          password: process.env.PASSWORD,
-          seedPhrase: process.env.SEED_PHRASE
-        },
-        dataRpcUrl: 'https://kovan.infura.io/radar',
-        radarRestEndpoint: 'https://api.kovan.radarrelay.com/v2',
-        radarWebsocketEndpoint: 'wss://ws.kovan.radarrelay.com/v2'
-      }),
       demandedLiquidity: {
         'LINK': 0,
         'KNC': 0,
@@ -38,16 +28,26 @@ export default class TradingPage extends React.Component {
         'WETH': 0,
         'ZRX': 0,
       },
+      rr: SdkManager.Setup({
+        wallet: {
+          password: process.env.PASSWORD,
+          seedPhrase: process.env.SEED_PHRASE
+        },
+        dataRpcUrl: 'https://kovan.infura.io/radar',
+        radarRestEndpoint: 'https://api.kovan.radarrelay.com/v2',
+        radarWebsocketEndpoint: 'wss://ws.kovan.radarrelay.com/v2'
+      }),
     }
     this.updateDemandedLiquitidy = this.updateDemandedLiquitidy.bind(this);
   }
 
   async componentDidMount() {
+    console.log('TradingPage.componentDidMount')
+    console.log(this.state)
     try {
-      console.log('componentDidMount')
-      this.state.rr.events.on(EventName.MarketsInitialized , async (data) => {
+      this.state.rr.events.on(EventName.MarketsInitialized, async (data) => {
         try {
-          console.log(EventName.MarketsInitialized)
+          console.log('EventName.MarketsInitialized', EventName.MarketsInitialized)
           let ZRX_WETH = await this.state.rr.markets.getAsync('ZRX-WETH')
           let REP_WETH = await this.state.rr.markets.getAsync('REP-WETH')
           let markets = {
@@ -65,41 +65,72 @@ export default class TradingPage extends React.Component {
           console.log(e)
         }
       })
-      await this.SdkManager.InitializeAsync(this.state.rr)
+    } catch (e) {
+      console.log(e)
+    }
+
+    try {
+      await SdkManager.InitializeAsync(this.state.rr)
     } catch (e) {
       console.log(e)
     }
   }
 
   async componentDidUpdate(prevProps, prevState) {
+    console.log('TradingPage.componentDidUpdate')
+    console.log(this.state)
+    let bids = this.state.markets['ZRX-WETH'].orderBook.bids
+    let availableSupply = 0
+    
     try {
-
-      console.log('TradingPage.componentDidUpdate')
-      console.log(this.state)
-      let demand = this.state.demandedLiquidity['WETH']
-      let bids = this.state.markets['ZRX-WETH'].orderBook.bids
-
-      let availableSupply = 0
       if (bids.length > 1)
-        availableSupply = bids.reduce((acc, currVal, currInd) => {
-          let former = currInd == 1
-            ? parseFloat(acc.remainingQuoteTokenAmount)
-            : acc
-          return former + parseFloat(currVal.remainingQuoteTokenAmount)
-        })
+         // type availableSupply: (bidsOrAsks => float)
+        availableSupply = bids
+          .reduce((acc, currVal, currInd) => {
+            return (
+              currInd == 1
+              ? parseFloat(acc.remainingQuoteTokenAmount)
+              : acc
+            ) + parseFloat(currVal.remainingQuoteTokenAmount)
+          })
+        
       else if (bids.length == 1)
-        availableSupply = bids[0]
+        // type availableSupply: (bidsOrAsks array => float)
+        availableSupply = bids[0].remainingQuoteTokenAmount
 
-      var remainingDemand = demand
+    } catch (e) {
+      console.log(e)
+    }
+
+    try {      
+      var remainingDemand = this.state.demandedLiquidity['WETH']
+
       for (var i = 0; i < bids.length; i++) {
         let orderAmount = bids[i].remainingQuoteTokenAmount;
+        console.log('orderAmount', typeof orderAmount, orderAmount)
+        let BnOrderAmount
+        try {
+          BnOrderAmount = new BigNumber(orderAmount);
+          console.log('BnOrderAmount (try1)', BnOrderAmount)
+        } catch (e) {
+          console.log(e)
+        }
+
+        try {
+          console.log('BnOrderAmount (try2)', BnOrderAmount)
+          await this
+            .state
+            .markets['ZRX-WETH']
+            .marketData
+            .marketOrderAsync(
+              UserOrderType.BUY,
+              BnOrderAmount
+            )
+        } catch (e) {
+          console.log(e)
+        }     
         remainingDemand -= orderAmount
         availableSupply -= orderAmount
-        console.log('orderAmount', typeof orderAmount, orderAmount)
-        this.state.markets['ZRX-WETH'].marketData.marketOrderAsync(
-          UserOrderType.BUY,
-          new BigNumber(orderAmount)
-        );
         if (remainingDemand <= 0 || availableSupply <= 0) break;
       }
       
@@ -109,7 +140,7 @@ export default class TradingPage extends React.Component {
   }
 
   updateDemandedLiquitidy(asset, amount) {
-    let newDemandedLiquidity = new BigNumber(amount)
+    let newDemandedLiquidity = new BigNumber(amount,10)
       .plus(this.state.demandedLiquidity[asset])
       .toNumber()
     
