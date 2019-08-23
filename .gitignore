@@ -10,3 +10,6 @@ npm-debug.log
 .idea
 docs/js/redux-saga.md
 .env
+
+.vscode
+internals/scripts/bash
