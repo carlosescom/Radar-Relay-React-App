@@ -4,6 +4,11 @@
 
 const path = require('path');
 const webpack = require('webpack');
+require('dotenv').config()
+
+
+console.log('PASSWORD', process.env.PASSWORD)
+console.log('SEED_PHRASE', process.env.SEED_PHRASE)
 
 module.exports = options => ({
   mode: options.mode,
@@ -113,6 +118,8 @@ module.exports = options => ({
     // drop any unreachable code.
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'development',
+      PASSWORD: process.env.PASSWORD,
+      SEED_PHRASE: process.env.SEED_PHRASE
     }),
   ]),
   resolve: {
